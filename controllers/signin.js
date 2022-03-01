@@ -1,44 +1,48 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const redis = require("redis");
+
+//setup redis
+const rdisClient = redis.createClient(process.env.REDIS_URI);
 
 const handleSignin = (db, bcrypt, req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return Promise.reject('incorrect form submission');
+    return Promise.reject("incorrect form submission");
   }
   return db
-    .select('email', 'hash')
-    .from('login')
-    .where('email', '=', email)
+    .select("email", "hash")
+    .from("login")
+    .where("email", "=", email)
     .then((data) => {
       const isValid = bcrypt.compareSync(password, data[0].hash);
       if (isValid) {
         return db
-          .select('*')
-          .from('users')
-          .where('email', '=', email)
+          .select("*")
+          .from("users")
+          .where("email", "=", email)
           .then((user) => user[0])
-          .catch((err) => Promise.reject('unable to get user'));
+          .catch((err) => Promise.reject("unable to get user"));
       } else {
-        Promise.reject('wrong credentials');
+        Promise.reject("wrong credentials");
       }
     })
-    .catch((err) => Promise.reject('wrong credentials'));
+    .catch((err) => Promise.reject("wrong credentials"));
 };
 
 const getAuthTokenId = () => {
-  console.log('Auth ok');
+  console.log("Auth ok");
 };
 
 const signToken = (email) => {
   const jwtPayload = { email };
-  return jwt.sign(jwtPayload, 'My_JWT_SuperSecret', { expiresIn: '4 hours' });
+  return jwt.sign(jwtPayload, "My_JWT_SuperSecret", { expiresIn: "4 hours" });
 };
 
 const createSessions = (user) => {
   //JWT Token, return user data
   const { id, email } = user;
   const token = signToken(email);
-  return { success: 'true', userId: 'id', token };
+  return { success: "true", userId: "id", token };
 };
 
 const signinAuthentication = (db, bcrypt) => (req, res) => {
