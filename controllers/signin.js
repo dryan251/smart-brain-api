@@ -1,16 +1,12 @@
 const jwt = require('jsonwebtoken');
 const redis = require('redis');
 
-(async () => {
-  //setup redis
-  const redisClient = redis.createClient({
-    url: process.env.REDIS_URI,
-  });
+//setup redis
+const redisClient = redis.createClient({
+  url: process.env.REDIS_URI,
+});
 
-  redisClient.on('error', (err) => console.log('Redis Client Error', err));
-
-  await redisClient.connect();
-})();
+redisClient.connect();
 
 const signToken = (email) => {
   const jwtPayload = { email };
